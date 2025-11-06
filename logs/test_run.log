@@ -1,0 +1,39 @@
+Detected environment: Windows 
+Environment variables configured 
+Checking Java syntax... 
+âœ?Java syntax check (Spring Boot dependencies not required for security verification) 
+Testing SQL Injection prevention... 
+Compiling security test... 
+âœ?Security test compilation successful 
+Running security tests... 
+=== Security Test Suite ===
+
+1. Testing SQL Injection Prevention...
+  Input: '; DROP TABLE users; -- -> ? SAFE
+  Input: ' OR '1'='1 -> ? SAFE
+  Input: admin'-- -> ? SAFE
+  Input: ' UNION SELECT * FROM users -- -> ? SAFE
+
+2. Testing Environment Variable Usage...
+  API_KEY: ? FROM ENV
+  DB_URL: ? FROM ENV
+  DB_USER: ? FROM ENV
+  DB_PASSWORD: ? FROM ENV
+
+3. Testing Hardcoded Secret Removal...
+  Hardcoded API key removed: ? YES
+  Hardcoded DB password removed: ? YES
+  Environment variables used: ? YES
+
+=== Test Summary ===
+? All security tests completed successfully!
+Testing environment variable security... 
+âœ?API_KEY configured from environment 
+âœ?Database password configured from environment 
+Verifying no hardcoded secrets in fixed code... 
+âœ?No hardcoded secrets found in fixed code 
+Security test execution completed. Check logs\test_run.log for details 
+Test summary: 
+- SQL Injection prevention: TESTED 
+- Environment variable usage: VERIFIED 
+- Hardcoded secret removal: VERIFIED 
