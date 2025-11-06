@@ -1,0 +1,71 @@
+{
+  "vulnerabilities": [
+    {
+      "id": "SQLI-001",
+      "type": "SQL Injection",
+      "location": { "file": "input.java", "line_start": 11, "line_end": 11 },
+      "description": "Direct string concatenation in SQL query allows attackers to inject malicious SQL code through the 'username' parameter",
+      "risk": "Critical",
+      "impact": "Attackers can read, modify, or delete database data, bypass authentication, or execute administrative operations on the database",
+      "recommendation": "Use parameterized queries (PreparedStatement) to safely handle user input",
+      "fixed_code_snippet": {
+        "line_start": 10,
+        "replacement": [
+          "        PreparedStatement stmt = conn.prepareStatement(\"SELECT * FROM users WHERE username = ?\");",
+          "        stmt.setString(1, username);",
+          "        ResultSet rs = stmt.executeQuery();"
+        ]
+      }
+    }
+  ],
+  "secrets": [
+    {
+      "id": "SECRET-001",
+      "type": "Hardcoded API Key",
+      "location": { "file": "input.java", "line_start": 6, "line_end": 6 },
+      "description": "API key is hardcoded in the source code, making it visible to anyone with access to the codebase",
+      "risk": "High",
+      "impact": "Exposed API key can be used by unauthorized parties to access external services, potentially leading to data breaches or financial losses",
+      "recommendation": "Store API keys in environment variables or secure configuration management systems",
+      "fixed_code_snippet": {
+        "line_start": 6,
+        "replacement": [
+          "    private static final String API_KEY = System.getenv(\"API_KEY\");"
+        ]
+      }
+    },
+    {
+      "id": "SECRET-002",
+      "type": "Hardcoded Database Credentials",
+      "location": { "file": "input.java", "line_start": 9, "line_end": 9 },
+      "description": "Database credentials including password are hardcoded in the connection string",
+      "risk": "Critical",
+      "impact": "Database credentials exposure can lead to unauthorized database access, data theft, or database manipulation",
+      "recommendation": "Use environment variables or secure configuration for database connection details",
+      "fixed_code_snippet": {
+        "line_start": 9,
+        "replacement": [
+          "        String dbUrl = System.getenv(\"DB_URL\");",
+          "        String dbUser = System.getenv(\"DB_USER\");",
+          "        String dbPassword = System.getenv(\"DB_PASSWORD\");",
+          "        Connection conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword);"
+        ]
+      }
+    }
+  ],
+  "secure_code_file": "UserController_fixed.java",
+  "verification": {
+    "steps": [
+      "1. Set environment variables: DB_URL, DB_USER, DB_PASSWORD, API_KEY",
+      "2. Compile the fixed Java code with Spring Boot dependencies",
+      "3. Test SQL injection attempts with malicious input like: username=' OR '1'='1",
+      "4. Verify that parameterized queries prevent SQL injection",
+      "5. Confirm that environment variables are loaded correctly"
+    ],
+    "expected_result": "SQL injection attempts should be safely handled without affecting the database, and no secrets should be visible in the source code"
+  },
+  "env_scripts": {
+    "Linux": ["setup.sh", "requirements.txt", "Dockerfile", "run_test.sh"],
+    "Windows": ["run_test.bat"]
+  }
+}
