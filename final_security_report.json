@@ -1,0 +1,77 @@
+{
+  "vulnerabilities": [
+    {
+      "id": "SQLI-001",
+      "type": "SQL Injection",
+      "location": { "file": "input.java", "line_start": 11, "line_end": 13 },
+      "description": "Unsafe string concatenation with user-controlled `username` and `password` into SQL query.",
+      "risk": "High - allows authentication bypass and data exfiltration.",
+      "impact": "An attacker can supply crafted input to manipulate the SQL query, potentially bypassing login or reading/modifying data.",
+      "recommendation": "Use prepared statements with parameterized queries, input validation, and use a connection pool/data source with externalized credentials.",
+      "fixed_code_snippet": {
+        "line_start": 1,
+        "replacement": [
+          "String sql = \"SELECT username FROM users WHERE username = ? AND password = ?\";",
+          "try (Connection conn = dataSource.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {",
+          "    ps.setString(1, username);",
+          "    ps.setString(2, password);",
+          "    try (ResultSet rs = ps.executeQuery()) {",
+          "        if (rs.next()) { return \"Welcome, \" + rs.getString(\"username\"); }",
+          "    }",
+          "}"
+        ]
+      }
+    }
+  ],
+  "secrets": [
+    {
+      "id": "SECRET-001",
+      "type": "Hardcoded Secret",
+      "location": { "file": "input.java", "line_start": 7, "line_end": 7 },
+      "description": "API key stored as a static final string in source code.",
+      "risk": "High - exposed credentials in source control or binaries.",
+      "impact": "An attacker with access to the repository or artifact may use the key to access external services.",
+      "recommendation": "Remove hardcoded secrets; use environment variables or a secrets manager (e.g., AWS Secrets Manager, Vault).",
+      "fixed_code_snippet": {
+        "line_start": 1,
+        "replacement": [
+          "// Remove hardcoded API keys. Retrieve from environment at runtime:",
+          "String apiKey = System.getenv(\"API_KEY\");",
+          "if (apiKey == null) { throw new IllegalStateException(\"API_KEY not set\"); }"
+        ]
+      }
+    },
+    {
+      "id": "SECRET-002",
+      "type": "Hardcoded Credentials",
+      "location": { "file": "input.java", "line_start": 11, "line_end": 11 },
+      "description": "Database credentials are hardcoded into getConnection call.",
+      "risk": "High",
+      "impact": "Credentials may be leaked via source control or binary, granting DB access.",
+      "recommendation": "Use externalized configuration (application.properties with environment overrides) and a DataSource managed by the container or framework.",
+      "fixed_code_snippet": {
+        "line_start": 1,
+        "replacement": [
+          "// Use DataSource with externalized config. Example (Spring Boot):",
+          "spring.datasource.url=jdbc:mysql://host:3306/db",
+          "spring.datasource.username=${DB_USER}",
+          "spring.datasource.password=${DB_PASS}"
+        ]
+      }
+    }
+  ],
+  "secure_code_file": "src/main/java/com/example/UserController_fixed.java",
+  "verification": {
+    "steps": [
+      "On Linux/macOS: run './setup.sh' to verify environment; then './run_test.sh' to execute tests.",
+      "On Windows: run 'run_test.bat' in PowerShell or CMD.",
+      "Start the application with 'mvn spring-boot:run' and perform requests to '/login' to verify expected responses and that SQL injection attempts fail.",
+      "Inspect 'logs/test_run.log' for test results and errors."
+    ],
+    "expected_result": "Unit tests pass, the application starts, login endpoint returns 'Login failed.' for invalid or injection payloads and 'Welcome, <username>' for valid credentials. No SQL errors or credential leaks in logs."
+  },
+  "env_scripts": {
+    "Linux": ["setup.sh", "pom.xml", "Dockerfile", "run_test.sh"],
+    "Windows": ["run_test.bat"]
+  }
+}
