@@ -1,0 +1,5 @@
+# System requirements for running and testing the app
+openjdk-17
+maven >=3.8
+curl
+docker (optional, recommended for test isolation)

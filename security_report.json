@@ -1,0 +1,120 @@
+{
+  "vulnerabilities": [
+    {
+      "id": "SQLI-001",
+      "type": "SQL Injection",
+      "location": { "file": "input.java", "line_start": 11, "line_end": 14 },
+      "description": "Unsanitized user input is concatenated into a SQL query and executed using a Statement, allowing SQL injection.",
+      "risk": "High",
+      "impact": "An attacker can manipulate the 'username' parameter to execute arbitrary SQL, leading to data leakage, account takeover, or database modification.",
+      "recommendation": "Use prepared/parameterized statements or a higher-level ORM (e.g., Spring Data JPA) to avoid SQL injection. Use a pooled DataSource (e.g., JdbcTemplate) instead of creating connections directly.",
+      "fixed_code_snippet": {
+        "line_start": 11,
+        "replacement": [
+          "// Use JdbcTemplate with parameterized queries instead of concatenation",
+          "String sql = \"SELECT username FROM users WHERE username = ?\";",
+          "String user = jdbcTemplate.queryForObject(sql, new Object[]{username}, String.class);"
+        ]
+      }
+    },
+    {
+      "id": "SECRET-DB-001",
+      "type": "Hardcoded Database Credentials",
+      "location": { "file": "input.java", "line_start": 11, "line_end": 11 },
+      "description": "Database URL, username, and password are hardcoded into the source code, exposing sensitive credentials.",
+      "risk": "High",
+      "impact": "An attacker with source access or leaked artifacts could use these credentials to access and modify the database. Credential exposure can lead to data breach.",
+      "recommendation": "Store database credentials outside source code: use environment variables, application properties stored securely (or a secrets manager), and configure a connection pool via Spring Boot properties.",
+      "fixed_code_snippet": {
+        "line_start": 11,
+        "replacement": [
+          "// Configure DataSource via application.properties (spring.datasource.*) and let Spring manage it.',",
+          "// Remove any DriverManager.getConnection usages from application code. Use JdbcTemplate or DataSource injection instead."
+        ]
+      }
+    },
+    {
+      "id": "SECRET-API-001",
+      "type": "Hardcoded Secret",
+      "location": { "file": "input.java", "line_start": 7, "line_end": 7 },
+      "description": "A secret API key is hardcoded in source code.",
+      "risk": "High",
+      "impact": "Hardcoded secrets in source control can be extracted, leading to unauthorized use of APIs or further credential compromise.",
+      "recommendation": "Remove secrets from source, store them in environment variables or a secrets manager, and load them using configuration properties (e.g., @Value or config server).",
+      "fixed_code_snippet": {
+        "line_start": 7,
+        "replacement": [
+          "// Read API key from environment or properties: @Value(\"${app.apiKey}\") String apiKey;",
+          "// No secrets in code." 
+        ]
+      }
+    },
+    {
+      "id": "RESOURCE-001",
+      "type": "Resource Leak / Unsafe Resource Handling",
+      "location": { "file": "input.java", "line_start": 10, "line_end": 16 },
+      "description": "The code opens database connections and statement/resultset objects without try-with-resources; resources may leak, or exceptions may propagate too far.",
+      "risk": "Medium",
+      "impact": "Resource leaks can lead to connection pool exhaustion and accidental exposure of sensitive information in stack traces.",
+      "recommendation": "Use Spring-managed DataSource and JdbcTemplate or try-with-resources; handle exceptions and avoid leaking internal errors to clients.",
+      "fixed_code_snippet": {
+        "line_start": 10,
+        "replacement": [
+          "// Use JdbcTemplate which safely handles resources; catch and map exceptions to safe HTTP responses.",
+          "try {",
+          "  String sql = \"SELECT username FROM users WHERE username = ?\";",
+          "  String user = jdbcTemplate.queryForObject(sql, new Object[]{username}, String.class);",
+          "  return ResponseEntity.ok(\"Welcome, \" + user);",
+          "} catch (EmptyResultDataAccessException e) {",
+          "  return ResponseEntity.status(HttpStatus.NOT_FOUND).body(\"User not found.\");",
+          "}" 
+        ]
+      }
+    }
+  ],
+  "secrets": [
+    {
+      "id": "SECRET-API-001",
+      "type": "Hardcoded Secret",
+      "location": { "file": "input.java", "line_start": 7, "line_end": 7 },
+      "description": "API key hardcoded",
+      "risk": "High",
+      "impact": "Leak of API key from source control",
+      "recommendation": "Use environment variables or secrets manager",
+      "fixed_code_snippet": {
+        "line_start": 7,
+        "replacement": [
+          "// Remove API_KEY constant and load via configuration: @Value(\"${app.apiKey:}\") String apiKey;"
+        ]
+      }
+    },
+    {
+      "id": "SECRET-DB-001",
+      "type": "Hardcoded Secret",
+      "location": { "file": "input.java", "line_start": 11, "line_end": 11 },
+      "description": "Database credentials hardcoded",
+      "risk": "High",
+      "impact": "Credentials in repo expose DB access",
+      "recommendation": "Use externalized config or secrets manager",
+      "fixed_code_snippet": {
+        "line_start": 11,
+        "replacement": [
+          "// Remove DriverManager.getConnection and use DataSource configured by Spring Boot via application.properties or environment variables."
+        ]
+      }
+    }
+  ],
+  "secure_code_file": "src/main/java/com/example/demo/UserController.java",
+  "verification": {
+    "steps": [
+      "Run ./setup.sh (Linux/macOS) or run mvn -q -DskipTests package (Windows) to build",
+      "Run ./run_test.sh (Linux/macOS) or run run_test.bat (Windows) to run the app and tests",
+      "Confirm logs/test_run.log contains 'TEST PASSED: Prepared statements prevent SQL injection.'"
+    ],
+    "expected_result": "Injection payloads do not return a valid 'Welcome' message and the app returns 'User not found.' for injection payloads; logs show TEST PASSED."
+  },
+  "env_scripts": {
+    "Linux": ["requirements.txt", "Dockerfile", "setup.sh", "run_test.sh"],
+    "Windows": ["run_test.bat"]
+  }
+}
