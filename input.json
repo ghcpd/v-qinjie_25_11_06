@@ -1,0 +1,26 @@
+{
+  "code_snippets": [
+    {
+      "id": "sql_injection",
+      "language": "Java",
+      "code": "String query = \"SELECT * FROM users WHERE username = '\" + username + \"'\"; Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(query);"
+    },
+    {
+      "id": "xss_vulnerability",
+      "language": "Java",
+      "code": "@GetMapping(\"/welcome\") public String welcomeUser(@RequestParam String name, Model model) { model.addAttribute(\"message\", \"<h2>Welcome \" + name + \"</h2>\"); return \"welcome\"; }"
+    },
+    {
+      "id": "hardcoded_secret",
+      "language": "Java",
+      "code": "private static final String AWS_SECRET = \"AKIAEXAMPLESECRETKEY\";"
+    }
+  ],
+  "expected_security_tasks": [
+    "Identify all vulnerabilities and classify their severity levels",
+    "Replace insecure Java code with secure alternatives",
+    "Produce a JSON-formatted vulnerability report with explanations",
+    "Generate automated Java unit tests verifying the fixes",
+    "Provide best-practice configuration recommendations for securing Spring Boot applications"
+  ]
+}
