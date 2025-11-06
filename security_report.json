@@ -1,0 +1,53 @@
+{
+  "vulnerabilities": [
+    {
+      "id": "SQLI-001",
+      "type": "SQL Injection",
+      "location": { "file": "input.java", "line_start": 8, "line_end": 13 },
+      "description": "User-supplied `username` and `password` are concatenated into SQL query, allowing injection.",
+      "risk": "High",
+      "impact": "Attacker can bypass authentication or exfiltrate data.",
+      "recommendation": "Use prepared statements with parameterized queries, validate input, and externalize DB credentials.",
+      "fixed_code_snippet": {
+        "line_start": 1,
+        "replacement": [
+          "String sql = \"SELECT username FROM users WHERE username = ? AND password = ?\";",
+          "PreparedStatement ps = conn.prepareStatement(sql);",
+          "ps.setString(1, username);",
+          "ps.setString(2, password);"
+        ]
+      }
+    }
+  ],
+  "secrets": [
+    {
+      "id": "SECRET-001",
+      "type": "Hardcoded Secret",
+      "location": { "file": "input.java", "line_start": 5, "line_end": 5 },
+      "description": "An API key is hardcoded in source code.",
+      "risk": "High",
+      "impact": "Credential exposure; attackers may abuse the key.",
+      "recommendation": "Remove secrets from code and use environment variables or a secrets manager.",
+      "fixed_code_snippet": {
+        "line_start": 1,
+        "replacement": [
+          "// API keys should be provided via environment variables or a secrets manager",
+          "// Example: String apiKey = System.getenv(\"API_KEY\");"
+        ]
+      }
+    }
+  ],
+  "secure_code_file": "src/main/java/com/example/UserController_fixed.java",
+  "verification": {
+    "steps": [
+      "Run `mvn -q test` or `./run_test.sh` to execute unit tests.",
+      "Start the app: `mvn spring-boot:run` and POST to /login with test credentials.",
+      "Confirm logs/test_run.log contains 'Tests finished' and no SQL errors."
+    ],
+    "expected_result": "Application starts, tests pass, and login endpoint resists SQL injection attempts."
+  },
+  "env_scripts": {
+    "Linux": ["setup.sh", "pom.xml", "Dockerfile", "run_test.sh"],
+    "Windows": ["run_test.bat"]
+  }
+}
