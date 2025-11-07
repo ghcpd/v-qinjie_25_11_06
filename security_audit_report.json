@@ -1,0 +1,119 @@
+{
+  "audit_date": "2025-11-06",
+  "file_scanned": "input.java",
+  "severity_summary": {
+    "critical": 3,
+    "high": 0,
+    "medium": 0,
+    "low": 0
+  },
+  "vulnerabilities": [
+    {
+      "id": "SQLI-001",
+      "type": "SQL Injection",
+      "location": {
+        "file": "input.java",
+        "line_start": 12,
+        "line_end": 12
+      },
+      "description": "User input is directly concatenated into SQL query string without any parameterization or escaping. The 'username' parameter from the HTTP request is inserted directly into the WHERE clause, allowing attackers to inject arbitrary SQL code.",
+      "risk": "CRITICAL - Allows complete database compromise",
+      "impact": "An attacker can: 1) Extract sensitive data (user credentials, personal information), 2) Modify or delete database records, 3) Escalate privileges, 4) Execute arbitrary commands on the database server depending on database permissions",
+      "example_attack": "?username=' OR '1'='1 would return all users; ?username=' ; DROP TABLE users; -- would delete the table",
+      "recommendation": "Use PreparedStatement with parameterized queries to separate SQL code from data. This ensures user input is treated as data, not executable code.",
+      "fixed_code_snippet": {
+        "line_start": 12,
+        "replacement": [
+          "String query = \"SELECT * FROM users WHERE username = ?\";",
+          "PreparedStatement pstmt = conn.prepareStatement(query);",
+          "pstmt.setString(1, username);",
+          "ResultSet rs = pstmt.executeQuery();"
+        ]
+      }
+    }
+  ],
+  "secrets": [
+    {
+      "id": "SECRET-001",
+      "type": "Hardcoded API Key",
+      "location": {
+        "file": "input.java",
+        "line_start": 7,
+        "line_end": 7
+      },
+      "description": "API key 'sk-1234567890abcdef' is hardcoded as a static string constant in the source code. This is exposed in: 1) Version control history (Git), 2) Compiled JAR files, 3) Decompiled bytecode, 4) Source code repositories and backups.",
+      "risk": "CRITICAL - Compromises authentication and authorization",
+      "impact": "Attackers with access to the API key can: 1) Impersonate the application, 2) Access protected resources, 3) Modify/delete data, 4) Incur costs if the key is linked to a paid service",
+      "recommendation": "Move API key to environment variable or external configuration file (not in version control). Use Spring's @Value annotation or environment properties.",
+      "fixed_code_snippet": {
+        "line_start": 7,
+        "replacement": [
+          "// API_KEY is now loaded from environment variables or application.properties",
+          "@Value(\"${api.key}\")",
+          "private String apiKey;"
+        ]
+      }
+    },
+    {
+      "id": "SECRET-002",
+      "type": "Hardcoded Database Credentials",
+      "location": {
+        "file": "input.java",
+        "line_start": 11,
+        "line_end": 11
+      },
+      "description": "Database credentials (username='root', password='password') are hardcoded directly in the application code. This violates secure configuration management practices and exposes the database to unauthorized access.",
+      "risk": "CRITICAL - Enables direct database access by unauthorized parties",
+      "impact": "Database credentials in source code allow: 1) Direct database access by anyone with source code access, 2) Data exfiltration, 3) Data corruption or deletion, 4) Privilege escalation within the database",
+      "recommendation": "Use Spring's environment variables, application.properties, or a secrets management system (e.g., HashiCorp Vault, AWS Secrets Manager). Never commit credentials to version control.",
+      "fixed_code_snippet": {
+        "line_start": 11,
+        "replacement": [
+          "String dbUrl = System.getenv(\"DB_URL\") != null ? System.getenv(\"DB_URL\") : \"jdbc:mysql://localhost:3306/appdb\";",
+          "String dbUser = System.getenv(\"DB_USER\");",
+          "String dbPassword = System.getenv(\"DB_PASSWORD\");",
+          "Connection conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword);"
+        ]
+      }
+    }
+  ],
+  "additional_security_issues": [
+    {
+      "id": "ISSUE-003",
+      "type": "Resource Management",
+      "description": "Connection, Statement, and ResultSet objects are not properly closed. This causes resource leaks and exhausts the database connection pool.",
+      "recommendation": "Use try-with-resources statement to automatically close resources.",
+      "severity": "HIGH"
+    },
+    {
+      "id": "ISSUE-004",
+      "type": "Error Handling",
+      "description": "Generic 'throws Exception' hides specific errors and may expose stack traces to users, revealing system architecture.",
+      "recommendation": "Use specific exception handling and proper logging without exposing internal details.",
+      "severity": "MEDIUM"
+    }
+  ],
+  "secure_code_file": "UserController_fixed.java",
+  "verification": {
+    "steps": [
+      "Verify PreparedStatement is used for all database queries with parameterized placeholders",
+      "Confirm SQL injection test (?username=' OR '1'='1) fails to bypass authentication",
+      "Verify environment variables are properly read from system configuration",
+      "Confirm API key and database credentials do not appear in source code",
+      "Test normal queries work correctly with various usernames including special characters",
+      "Verify resource cleanup with try-with-resources blocks"
+    ],
+    "expected_result": "All SQL injection attempts fail safely. Normal queries return correct results. No credentials visible in code. Resources are properly closed."
+  },
+  "env_scripts": {
+    "Linux": [
+      "setup.sh",
+      "requirements.txt",
+      "Dockerfile",
+      "run_test.sh"
+    ],
+    "Windows": [
+      "run_test.bat"
+    ]
+  }
+}
