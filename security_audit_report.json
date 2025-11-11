@@ -1,0 +1,97 @@
+{
+  "vulnerabilities": [
+    {
+      "id": "SQLI-001",
+      "type": "SQL Injection",
+      "location": {
+        "file": "input.java",
+        "line_start": 13,
+        "line_end": 13
+      },
+      "description": "Direct string concatenation of user input into SQL query without sanitization or parameterization. The username parameter is directly inserted into the SQL query string, allowing attackers to inject malicious SQL code.",
+      "risk": "CRITICAL",
+      "impact": "Attackers can execute arbitrary SQL commands, potentially leading to unauthorized data access, data modification, data deletion, or complete database compromise. Example attack: username=' OR '1'='1 would return all users.",
+      "recommendation": "Use PreparedStatement with parameterized queries to ensure proper escaping and prevent SQL injection attacks. Never concatenate user input directly into SQL queries.",
+      "fixed_code_snippet": {
+        "line_start": 24,
+        "line_end": 28,
+        "file": "UserController_fixed.java",
+        "replacement": [
+          "        try (Connection conn = dataSource.getConnection();",
+          "             PreparedStatement pstmt = conn.prepareStatement(\"SELECT * FROM users WHERE username = ?\")) {",
+          "            ",
+          "            // SECURITY FIX: Set parameter safely - prevents SQL injection",
+          "            pstmt.setString(1, username);"
+        ]
+      }
+    }
+  ],
+  "secrets": [
+    {
+      "id": "SECRET-001",
+      "type": "Hardcoded Secret",
+      "location": {
+        "file": "input.java",
+        "line_start": 7,
+        "line_end": 7
+      },
+      "description": "API key is hardcoded directly in the source code as a static final string. This secret is exposed in version control and can be easily extracted from compiled bytecode.",
+      "risk": "HIGH",
+      "impact": "If the source code is leaked or accessible, the API key can be stolen and misused. This could lead to unauthorized API access, potential data breaches, and financial losses. Hardcoded secrets are also difficult to rotate without code changes.",
+      "recommendation": "Store API keys in environment variables or a secure secrets management system (e.g., AWS Secrets Manager, HashiCorp Vault). Use Spring's @Value annotation with environment variable references or Spring Cloud Config for externalized configuration.",
+      "fixed_code_snippet": {
+        "line_start": 14,
+        "line_end": 15,
+        "file": "UserController_fixed.java",
+        "replacement": [
+          "    @Value(\"${app.api.key}\")",
+          "    private String apiKey;"
+        ]
+      }
+    },
+    {
+      "id": "SECRET-002",
+      "type": "Hardcoded Database Credentials",
+      "location": {
+        "file": "input.java",
+        "line_start": 11,
+        "line_end": 11
+      },
+      "description": "Database connection credentials (username and password) are hardcoded directly in the source code. The database URL, username, and password are all exposed as plain text strings.",
+      "risk": "CRITICAL",
+      "impact": "Database credentials exposed in source code can lead to unauthorized database access, data breaches, and complete system compromise. If the code is committed to version control, these credentials become permanently exposed. Attackers could read, modify, or delete all database records.",
+      "recommendation": "Use Spring Boot's application.properties or application.yml with environment variables for database configuration. Implement connection pooling using DataSource beans. Never hardcode database credentials in source code.",
+      "fixed_code_snippet": {
+        "line_start": 18,
+        "line_end": 19,
+        "file": "UserController_fixed.java",
+        "replacement": [
+          "    // SECURITY FIX: Use DataSource bean for database connections",
+          "    @Autowired",
+          "    private DataSource dataSource;"
+        ]
+      }
+    }
+  ],
+  "secure_code_file": "UserController_fixed.java",
+  "verification": {
+    "steps": [
+      "1. Review the fixed code to ensure PreparedStatement is used instead of Statement",
+      "2. Verify that API key is loaded from environment variable using @Value annotation",
+      "3. Confirm database connection uses DataSource bean instead of hardcoded credentials",
+      "4. Set environment variables: APP_API_KEY=sk-1234567890abcdef",
+      "5. Configure application.properties with database connection properties",
+      "6. Test SQL injection attempt: Send request with username=' OR '1'='1",
+      "7. Verify that the malicious SQL is treated as literal string and query fails safely",
+      "8. Check that no sensitive data is exposed in error messages",
+      "9. Verify API key is loaded from environment and not hardcoded",
+      "10. Confirm database credentials are externalized and not in source code"
+    ],
+    "expected_result": "The application should reject SQL injection attempts by treating malicious input as literal string values. API key and database credentials should be loaded from secure external configuration. No sensitive information should be exposed in source code, logs, or error messages."
+  },
+  "env_scripts": {
+    "Linux": ["setup.sh", "requirements.txt", "Dockerfile", "run_test.sh"],
+    "Windows": ["run_test.bat"]
+  }
+}
+

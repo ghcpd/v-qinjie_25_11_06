@@ -1,0 +1,25 @@
+========================================== 
+Security Test Execution - 2025/11/11 ÖÜ¶þ 13:28:39.28 
+========================================== 
+ 
+Detected OS: Windows 
+Working Directory: C:\GenAI\Bug_Bash\v-qinjie_25_11_06 
+ 
+[TEST 1] Checking for fixed code file... 
+[TEST 1] âœ?UserController_fixed.java found 
+ 
+[TEST 2] Scanning for hardcoded secrets... 
+[TEST 2] âœ?No API key patterns found 
+ 
+[TEST 3] Checking for SQL injection protection... 
+[TEST 3] âœ?PreparedStatement found (SQL injection protection
+[TEST 3] âœ?Parameterized query found (setString
+ 
+[TEST 4] Checking for externalized configuration... 
+[TEST 4] âœ?@Value annotation found (externalized config
+[TEST 4] âœ?DataSource bean usage found 
+ 
+[TEST 5] Verifying security audit report... 
+[TEST 5] âœ?security_audit_report.json found 
+ 
+[TEST 6] Testing code compilation... 
