@@ -1,5 +1,83 @@
 "startDate":2025-11-10 13:22:00
 "endDate":2025-11-10 13:25:00
+
+User
+You are a software security engineer tasked with auditing and securing a Java Spring Boot web application.
+Your responsibilities include:
+1. Identify all SQL injection vulnerabilities in the provided Java source code and list each with file name and code line numbers.
+2. Detect and report any hardcoded secrets or API keys, also with file name and line numbers.
+3. Generate a fully secure, production-ready fixed version of the vulnerable Java file(s).
+4. Provide a detailed explanation for each fix, including:
+○ Why the issue was a security risk
+○ How your change mitigates the vulnerability
+○ Verification steps showing that the fix works
+example format:
+{
+"vulnerabilities": [
+{
+"id": "SQLI-001",
+"type": "SQL Injection",
+"location": { "file": "Test.java", "line_start": 1, "line_end": 2 },
+"description": "",
+"risk": "",
+"impact": "",
+"recommendation": "",
+"fixed_code_snippet": {
+"line_start": ,
+"replacement": [
+"",
+"",
+]
+}
+}
+],
+"secrets": [
+{
+"id": "SECRET-001",
+"type": "Hardcoded Secret",
+"location": { "file": "Test.java", "line_start": 3, "line_end": 4 },
+"description": "",
+"risk": "",
+"impact": "",
+"recommendation": "",
+"fixed_code_snippet": {
+"line_start": ,
+"replacement": [
+"",
+"",
+]
+}
+}
+],
+"secure_code_file": "Test_fixed.java",
+"verification": {
+"steps": [
+"",
+"",
+""
+],
+"expected_result": ""
+},
+"env_scripts": {
+"Linux": ["setup.sh", "requirements.txt", "Dockerfile", "run_test.sh"],
+"Windows": ["run_test.bat"]
+}
+}
+
+5. Generate environment replication scripts for each major platform, including:
+	○ requirements.txt, Dockerfile, and setup.sh (for Linux/macOS)
+	○ run_test.sh (Linux/macOS), run_test.bat (Windows)
+6. Implement automatic test execution:
+	○ The script must detect the current environment (Windows/Linux/Docker)
+	○ Run the corresponding test script automatically
+	○ Save logs to logs/test_run.log
+7. Ensure all generated outputs include:
+	○ A structured JSON report summarizing detected vulnerabilities, their severity, affected files and lines, and secure replacements
+	○ The repaired source file(s) with safe code replacements
+	○ Scripts that allow reproducible security verification in each environment
+
+
+Cursor
 Analyzing the code for security vulnerabilities and preparing fixes. Reviewing the file structure first.
 
 
