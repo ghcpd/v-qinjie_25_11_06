@@ -1,0 +1,64 @@
+# Ignore sensitive configuration files
+application.properties
+application.yml
+application-*.properties
+application-*.yml
+.env
+.env.local
+.env.*.local
+
+# Ignore IDE settings
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Ignore build artifacts
+target/
+build/
+dist/
+*.jar
+*.war
+*.ear
+*.class
+
+# Ignore dependency directories
+.classpath
+.project
+.settings/
+bin/
+lib/
+
+# Ignore logs
+logs/
+*.log
+
+# Ignore sensitive files
+secrets/
+credentials/
+keys/
+certs/
+*.pem
+*.key
+*.p12
+*.keystore
+
+# IDE specific
+*.iml
+.gradle/
+
+# Maven
+.mvn/
+
+# Node modules (if applicable)
+node_modules/
+npm-debug.log
+
+# Never commit these patterns:
+# - Files containing "password", "secret", "token", "key"
+# - Files with database credentials
+# - API keys and authentication tokens
+# - Private keys or certificates
+# - Configuration files with env-specific secrets
